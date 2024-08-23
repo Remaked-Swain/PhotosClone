@@ -12,11 +12,8 @@ struct AssetDisplayView<Router: AppRouter>: View {
     @EnvironmentObject private var router: Router
     @ObservedObject private var viewModel: AssetDisplayViewModel
     
-    let asset: PHAsset
-    
-    init(_ viewModel: AssetDisplayViewModel, asset: PHAsset) {
+    init(_ viewModel: AssetDisplayViewModel) {
         self.viewModel = viewModel
-        self.asset = asset
     }
     
     var body: some View {
@@ -42,12 +39,10 @@ struct AssetDisplayView<Router: AppRouter>: View {
             
             // 대표 이미지
             TabView(selection: $viewModel.currentIndex) {
-                LazyHStack {
+                ForEach(0..<viewModel.fetchResult.count, id: \.self) { index in
                     GeometryReader { proxy in
-                        ForEach(0..<viewModel.fetchResult.count, id: \.self) { index in
-                            assetContent(viewModel.fetchResult.object(at: index), targetSize: proxy.size)
-                                .tag(index)
-                        }
+                        assetContent(viewModel.fetchResult.object(at: index), targetSize: proxy.size)
+                            .tag(index)
                     }
                 }
                 .padding()
@@ -63,12 +58,18 @@ struct AssetDisplayView<Router: AppRouter>: View {
                         ForEach(0..<viewModel.fetchResult.count, id: \.self) { index in
                             router.view(to: .thumbnailView(asset: viewModel.fetchResult[index], size: size, contentMode: .fill))
                                 .frame(width: 50, height: 50)
+                                .onTapGesture {
+                                    withAnimation {
+                                        viewModel.currentIndex = index
+                                    }
+                                }
                                 .id(index)
                                 .tag(index)
                         }
                     }
                     .frame(height: 50)
                 }
+                .scrollIndicators(.hidden)
                 .onAppear {
                     viewModel.startCaching(targetSize: size)
                 }

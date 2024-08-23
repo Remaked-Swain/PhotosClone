@@ -54,8 +54,7 @@ enum Route: Routable {
             
             // ComponentsView
         case .thumbnailView(let asset, let size, let contentMode):
-            let handler = router.resolver.resolve(AllPhotosViewModel.self).requestImage
-            ThumbnailView<Router>(handler: handler, asset: asset, size: size, contentMode: contentMode)
+            ThumbnailView<Router>(router.resolver.resolve(ThumbnailViewModel.self), asset: asset, size: size, contentMode: contentMode)
         case .videoPlayerView(let asset):
             VideoPlayerView<Router>(router.resolver.resolve(VideoPlayerViewModel.self), asset: asset)
         }

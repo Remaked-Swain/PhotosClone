@@ -8,8 +8,23 @@
 import SwiftUI
 import Photos
 
+final class ThumbnailViewModel: ObservableObject {
+    @Published var image: Image?
+    
+    private let librarySerivce: LibraryService
+    
+    init(libraryService: LibraryService) {
+        self.librarySerivce = libraryService
+    }
+    
+    func requestImage(for asset: PHAsset, targetSize: CGSize, contentMode: PHImageContentMode) async -> ImageData? {
+        await librarySerivce.requestImage(for: asset, targetSize: targetSize, contentMode: contentMode)
+    }
+}
+
 struct ThumbnailView<Router: AppRouter>: View {
     @EnvironmentObject private var router: Router
+    @ObservedObject private var viewModel: ThumbnailViewModel
     @State private var image: Image?
     
     private var imageContentMode: PHImageContentMode {
@@ -19,10 +34,23 @@ struct ThumbnailView<Router: AppRouter>: View {
         }
     }
     
-    let handler: (PHAsset, CGSize, PHImageContentMode) async -> ImageData?
     let asset: PHAsset
     let size: CGSize
     let contentMode: ContentMode
+    
+    init(
+        _ viewModel: ThumbnailViewModel,
+        image: Image? = nil,
+        asset: PHAsset,
+        size: CGSize,
+        contentMode: ContentMode
+    ) {
+        self.viewModel = viewModel
+        self.image = image
+        self.asset = asset
+        self.size = size
+        self.contentMode = contentMode
+    }
     
     var body: some View {
         Group {
@@ -39,11 +67,12 @@ struct ThumbnailView<Router: AppRouter>: View {
             }
         }
         .task {
-            // 이미 로드된 이미지가 있으면 다시 가져올 필요 없음
-            guard image == nil else { return }
-            let imageData = await handler(asset, size, imageContentMode)
+            let imageData = await viewModel.requestImage(for: asset, targetSize: size, contentMode: imageContentMode)
             guard let uiImage = imageData?.image else { return }
             image = Image(uiImage: uiImage)
+        }
+        .onChange(of: viewModel.image) {
+            self.image = viewModel.image
         }
     }
 }

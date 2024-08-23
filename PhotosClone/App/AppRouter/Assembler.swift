@@ -21,6 +21,9 @@ struct CommonAssembly: Assembly {
         container.register(for: AllPhotosViewModel.self) { resolver in
             AllPhotosViewModel(libraryService: resolver.resolve(LibraryService.self))
         }
+        container.register(for: ThumbnailViewModel.self) { resolver in
+            ThumbnailViewModel(libraryService: resolver.resolve(LibraryService.self))
+        }
         container.register(for: VideoPlayerViewModel.self) { resolver in
             VideoPlayerViewModel(libraryService: resolver.resolve(LibraryService.self))
         }
