@@ -8,9 +8,8 @@
 import SwiftUI
 import Photos
 
-struct ThumbnailView: View {
-    @EnvironmentObject private var libraryService: LibraryService
-    
+struct ThumbnailView<Router: AppRouter>: View {
+    @EnvironmentObject private var router: Router
     @State private var image: Image?
     
     private var imageContentMode: PHImageContentMode {
@@ -20,6 +19,7 @@ struct ThumbnailView: View {
         }
     }
     
+    let handler: (PHAsset, CGSize, PHImageContentMode) async -> ImageData?
     let asset: PHAsset
     let size: CGSize
     let contentMode: ContentMode
@@ -41,7 +41,7 @@ struct ThumbnailView: View {
         .task {
             // 이미 로드된 이미지가 있으면 다시 가져올 필요 없음
             guard image == nil else { return }
-            let imageData = await libraryService.requestImage(for: asset, targetSize: size, contentMode: imageContentMode)
+            let imageData = await handler(asset, size, imageContentMode)
             guard let uiImage = imageData?.image else { return }
             image = Image(uiImage: uiImage)
         }

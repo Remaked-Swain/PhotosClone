@@ -9,13 +9,12 @@ import SwiftUI
 
 @main
 struct PhotosCloneApp: App {
-    @StateObject private var libraryService = LibraryService()
+    @StateObject private var router = DefaultAppRouter(by: CommonAssembly())
     
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                MainView()
-                    .environmentObject(libraryService)
+                router.view(to: .routerView)
             }
         }
     }

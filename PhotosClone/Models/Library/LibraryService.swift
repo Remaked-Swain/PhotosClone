@@ -8,7 +8,7 @@
 import UIKit
 import Photos
 
-final class LibraryService: NSObject, ObservableObject {
+final class LibraryService: NSObject {
     private let sortOption: PhotoAssetSortOption = .creationDate
     @Published var assets: PHFetchResult<PHAsset> = .init()
     @Published var smartAlbums: PHFetchResult<PHAssetCollection> = .init()
@@ -24,6 +24,11 @@ final class LibraryService: NSObject, ObservableObject {
     }()
     
     private let imageManager: PHCachingImageManager = .init()
+    
+    override init() {
+        super.init()
+        PHPhotoLibrary.shared().register(self)
+    }
     
     deinit {
         PHPhotoLibrary.shared().unregisterChangeObserver(self)
@@ -131,6 +136,19 @@ extension LibraryService {
         guard let playerItem = playerItem else { return nil }
         let videoData = VideoData(requestId: requestId, playerItem: playerItem)
         return videoData
+    }
+    
+    func deleteAsset(for assets: PHAsset...) async throws {
+        let assets = assets as [PHAsset]
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest.deleteAssets(assets as NSArray)
+        }
+    }
+    
+    func toggleAssetFavorite(for asset: PHAsset) async throws {
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest(for: asset).isFavorite = !asset.isFavorite
+        }
     }
 }
 

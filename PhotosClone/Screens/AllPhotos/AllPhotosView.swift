@@ -8,20 +8,14 @@
 import SwiftUI
 import Photos
 
-struct AllPhotosView: View {
-    @EnvironmentObject private var libraryService: LibraryService
-    @State var assetsCreationDateText: String = ""
-    @State private var appearedAssetsDate: [Date] = [] {
-        didSet {
-            assetsCreationDateText = convertDateToString(min: appearedAssetsDate.min() ?? Date(), max: appearedAssetsDate.max() ?? Date())
-        }
-    }
+struct AllPhotosView<Router: AppRouter>: View {
+    @EnvironmentObject private var router: Router
+    @ObservedObject private var viewModel: AllPhotosViewModel
     
     private let columns = [GridItem](repeating: .init(.flexible(), spacing: 2), count: 3)
-    let assets: [PHAsset]
     
-    init(assets: PHFetchResult<PHAsset>) {
-        self.assets = assets.toArray()
+    init(_ viewModel: AllPhotosViewModel) {
+        self.viewModel = viewModel
     }
     
     var body: some View {
@@ -33,16 +27,25 @@ struct AllPhotosView: View {
                 
                 ScrollView(.vertical) {
                     LazyVGrid(columns: columns, spacing: 0) {
-                        ForEach(assets, id: \.localIdentifier) { asset in
-                            thumbnail(asset, cellSize)
+                        ForEach(viewModel.assets, id: \.id) { asset in
+                            router.view(to: .thumbnailView(asset: asset, size: cellSize, contentMode: .fill))
                                 .onAppear {
-                                    libraryService.startCaching(for: assets, targetSize: cellSize)
+                                    viewModel.appendDate(asset.creationDate)
                                 }
                                 .onDisappear {
-                                    libraryService.stopCaching(for: assets, targetSize: cellSize)
+                                    viewModel.removeDate(asset.creationDate)
+                                }
+                                .onTapGesture {
+                                    router.route(to: .assetDisplayView(asset: asset))
                                 }
                         }
                     }
+                }
+                .onAppear {
+                    viewModel.startCaching(targetSize: cellSize)
+                }
+                .onDisappear {
+                    viewModel.stopCaching(targetSize: cellSize)
                 }
                 .defaultScrollAnchor(.bottom)
             }
@@ -51,7 +54,7 @@ struct AllPhotosView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text("보관함")
                     .font(.title.bold())
-                Text(assetsCreationDateText)
+                Text(viewModel.assetsCreationDateText)
                     .font(.headline)
             }
             .shadow(radius: 4)
@@ -59,41 +62,4 @@ struct AllPhotosView: View {
             .padding()
         }
     }
-    
-    @ViewBuilder private func thumbnail(_ asset: PHAsset, _ size: CGSize) -> some View {
-        NavigationLink {
-            AssetDisplayView(asset: asset)
-        } label: {
-            ThumbnailView(asset: asset, size: size, contentMode: .fill)
-                .onAppear {
-                    guard let date = asset.creationDate else { return }
-                    appearedAssetsDate.append(date)
-                }
-                .onDisappear {
-                    guard let date = asset.creationDate else { return }
-                    appearedAssetsDate.removeAll { date == $0 }
-                }
-        }
-    }
-    
-    private func convertDateToString(min: Date, max: Date) -> String {
-        let calendar = Calendar.current
-        let min = calendar.dateComponents([.day, .month, .year], from: min)
-        let max = calendar.dateComponents([.day, .month, .year], from: max)
-        
-        if min.year != max.year {
-            return "\(min.year ?? 0)년 \(min.month ?? 0)월 \(min.day ?? 0)일 ~ \(max.year ?? 0)년 \(max.month ?? 0)월 \(max.day ?? 0)일"
-        } else if min.month != max.month {
-            return "\(min.year ?? 0)년 \(min.month ?? 0)월 \(min.day ?? 0)일 ~ \(max.month ?? 0)월 \(max.day ?? 0)일"
-        } else if min.day != max.day {
-            return "\(min.year ?? 0)년 \(min.month ?? 0)월 \(min.day ?? 0)일 ~ \(max.day ?? 0)일"
-        } else {
-            return "\(min.year ?? 0)년 \(min.month ?? 0)월 \(min.day ?? 0)일"
-        }
-    }
-}
-
-#Preview {
-    MainView()
-        .environmentObject(LibraryService())
 }

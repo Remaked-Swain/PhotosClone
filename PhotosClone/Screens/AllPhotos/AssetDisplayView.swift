@@ -8,59 +8,109 @@
 import SwiftUI
 import Photos
 
-struct AssetDisplayView: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var librarySerivce: LibraryService
+struct AssetDisplayView<Router: AppRouter>: View {
+    @EnvironmentObject private var router: Router
+    @ObservedObject private var viewModel: AssetDisplayViewModel
+    
     let asset: PHAsset
+    
+    init(_ viewModel: AssetDisplayViewModel, asset: PHAsset) {
+        self.viewModel = viewModel
+        self.asset = asset
+    }
     
     var body: some View {
         VStack {
             // 제목 및 날짜
-            HStack {
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    if let date = asset.creationDate {
-                        Text(date.toString(by: .yyyyMMddKorean))
-                            .font(.title3.bold())
-                        Text(date.toString(by: .HHmm))
-                            .font(.footnote)
-                    }
+                    Text(viewModel.assetInfoTitle)
+                        .font(.title3.bold())
+                    Text(viewModel.assetInfoSubtitle)
+                        .font(.footnote)
                 }
                 
                 Spacer()
                 
-                StrokedButton(.circle) {
+                Button {
+                    router.dismiss()
+                } label: {
                     Image(systemName: "xmark")
-                } action: {
-                    dismiss()
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .shadow(radius: 4)
             
-            Spacer()
-            
-            // AssetContent
-            GeometryReader { proxy in
-                Group {
-                    assetContent(asset, targetSize: proxy.size)
+            // 대표 이미지
+            TabView(selection: $viewModel.currentIndex) {
+                LazyHStack {
+                    GeometryReader { proxy in
+                        ForEach(0..<viewModel.fetchResult.count, id: \.self) { index in
+                            assetContent(viewModel.fetchResult.object(at: index), targetSize: proxy.size)
+                                .tag(index)
+                        }
+                    }
                 }
+                .padding()
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
             
-            Spacer()
-            
-            // Hovering Controller
-            HStack {
+            // 하단 Carousel
+            ScrollViewReader { proxy in
+                let size = CGSize(width: 50, height: 50)
                 
+                ScrollView(.horizontal) {
+                    LazyHStack {
+                        ForEach(0..<viewModel.fetchResult.count, id: \.self) { index in
+                            router.view(to: .thumbnailView(asset: viewModel.fetchResult[index], size: size, contentMode: .fill))
+                                .frame(width: 50, height: 50)
+                                .id(index)
+                                .tag(index)
+                        }
+                    }
+                    .frame(height: 50)
+                }
+                .onAppear {
+                    viewModel.startCaching(targetSize: size)
+                }
+                .onDisappear {
+                    viewModel.stopCaching(targetSize: size)
+                }
+                .onChange(of: viewModel.currentIndex) {
+                    withAnimation {
+                        proxy.scrollTo(viewModel.currentIndex, anchor: .center)
+                    }
+                }
+            }
+            
+            // Hovering Controlls
+            HStack(spacing: 20) {
+                Button {
+                    viewModel.toggleFavorite()
+                } label: {
+                    Image(systemName: "heart.fill")
+                        .smallMaterialButton()
+                }
+                
+                Spacer()
+                
+                Button {
+                    viewModel.deleteAsset()
+                } label: {
+                    Image(systemName: "trash")
+                        .smallMaterialButton()
+                }
             }
         }
         .padding()
+        .navigationBarBackButtonHidden()
     }
-    
+
     @ViewBuilder private func assetContent(_ asset: PHAsset, targetSize: CGSize) -> some View {
         switch asset.mediaType {
         case .image, .unknown:
-            ThumbnailView(asset: asset, size: targetSize, contentMode: .fit)
+            router.view(to: .thumbnailView(asset: asset, size: targetSize, contentMode: .fit))
         case .audio, .video:
-            VideoPlayerView(asset: asset)
+            router.view(to: .videoPlayerView(asset: asset))
         @unknown default:
             ContentUnavailableView("표시할 수 없음.", image: "questionmark", description: Text("알 수 없는 미디어 파일이기 때문에 표시할 수 없습니다."))
         }
