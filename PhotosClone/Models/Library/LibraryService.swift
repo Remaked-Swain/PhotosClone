@@ -11,6 +11,7 @@ import Photos
 final class LibraryService: NSObject {
     private let sortOption: PhotoAssetSortOption = .creationDate
     @Published var assets: PHFetchResult<PHAsset> = .init()
+    @Published var selectedAsset: PHAsset? = nil
     @Published var smartAlbums: PHFetchResult<PHAssetCollection> = .init()
     @Published var collections: PHFetchResult<PHCollection> = .init()
     private var status: PHAuthorizationStatus { PHPhotoLibrary.authorizationStatus(for: .readWrite) }

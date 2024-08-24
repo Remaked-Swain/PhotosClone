@@ -10,6 +10,7 @@ import Photos
 
 final class MainViewModel: ObservableObject {
     @Published var isAlertPresented: Bool = false
+    @Published var selectedTab: ScreenType = .allPhotos
     
     private let libraryService: LibraryService
     

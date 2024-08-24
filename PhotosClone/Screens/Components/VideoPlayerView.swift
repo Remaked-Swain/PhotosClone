@@ -28,6 +28,7 @@ final class VideoPlayerViewModel: ObservableObject {
 struct VideoPlayerView<Router: AppRouter>: View {
     @EnvironmentObject private var router: Router
     @ObservedObject private var viewModel: VideoPlayerViewModel
+    @State private var player: AVPlayer?
     
     let asset: PHAsset
     
@@ -40,9 +41,24 @@ struct VideoPlayerView<Router: AppRouter>: View {
     }
     
     var body: some View {
-        VideoPlayer(player: AVPlayer(playerItem: viewModel.playerItem))
-            .task {
-                await viewModel.fetchVideo(asset)
+        Group {
+            if let player = player {
+                VideoPlayer(player: player)
+                    .onAppear {
+                        player.play()
+                    }
+                    .onDisappear {
+                        player.pause()
+                    }
+            } else {
+                ProgressView()
+                    .task {
+                        await viewModel.fetchVideo(asset)
+                    }
             }
+        }
+        .onChange(of: viewModel.playerItem) {
+            player = AVPlayer(playerItem: viewModel.playerItem)
+        }
     }
 }

@@ -62,7 +62,7 @@ struct ThumbnailView<Router: AppRouter>: View {
                     .clipped()
             } else {
                 Rectangle()
-                    .background(.thickMaterial)
+                    .background(.clear)
                     .frame(width: size.width, height: size.height)
             }
         }

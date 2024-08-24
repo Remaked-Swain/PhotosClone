@@ -11,6 +11,7 @@ import Combine
 
 final class AllPhotosViewModel: ObservableObject {
     @Published var assets: [PHAsset] = []
+
     @Published var assetsCreationDateText: String = ""
     private var appearedAssetsDate: [Date] = [] {
         didSet {
@@ -76,5 +77,9 @@ extension AllPhotosViewModel {
     
     func requestImage(for asset: PHAsset, targetSize: CGSize, contentMode: PHImageContentMode) async -> ImageData? {
         await libraryService.requestImage(for: asset, targetSize: targetSize, contentMode: contentMode)
+    }
+    
+    func selectAsset(_ asset: PHAsset) {
+        libraryService.selectedAsset = asset
     }
 }

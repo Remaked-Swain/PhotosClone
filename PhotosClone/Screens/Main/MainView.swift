@@ -16,8 +16,12 @@ struct MainView<Router: AppRouter>: View {
     }
     
     var body: some View {
-        VStack {
+        TabView(selection: $viewModel.selectedTab) {
             router.view(to: .allPhotosView)
+                .tabItemStyle(.allPhotos)
+            
+            AssetCollectionView
+                .tabItemStyle(.albums)
         }
         .task {
             do {

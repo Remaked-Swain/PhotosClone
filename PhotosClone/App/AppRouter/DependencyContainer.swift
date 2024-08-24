@@ -37,12 +37,6 @@ final class DefaultDependencyContainer {
             return instance
         }
         
-        if let closure = dependencies[key] as? (DependencyResolver) -> T {
-            let instance = closure(self)
-            dependencies[key] = instance
-            return instance
-        }
-        
         fatalError("의존성 객체를 찾을 수 없음: \(key)")
     }
 }
@@ -54,7 +48,8 @@ extension DefaultDependencyContainer: DependencyContainer {
     }
     
     func register<T>(for type: T.Type, _ handler: @escaping (any DependencyResolver) -> T) {
-        _register(for: type, handler)
+        let instance = handler(self)
+        _register(for: type, instance)
     }
     
     func resolve<T>(_ type: T.Type) -> T {

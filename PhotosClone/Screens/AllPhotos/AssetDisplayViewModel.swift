@@ -18,7 +18,8 @@ final class AssetDisplayViewModel: ObservableObject {
     }
     @Published var assetInfoTitle: String = ""
     @Published var assetInfoSubtitle: String = ""
-    @Published var isFavorite: Bool = false
+    
+    var currentAsset: PHAsset { fetchResult[currentIndex] }
 
     private var cancellables = Set<AnyCancellable>()
     
@@ -34,6 +35,15 @@ final class AssetDisplayViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] assets in
                 self?.fetchResult = assets
+            }
+            .store(in: &cancellables)
+        
+        libraryService.$selectedAsset
+            .sink { [weak self] asset in
+                guard let asset = asset else { return }
+                self?.currentIndex = self?.fetchResult.index(of: asset) ?? 0
+                self?.assetInfoTitle = asset.creationDate?.toString(by: .yyyyMMddKorean) ?? "사진"
+                self?.assetInfoSubtitle = asset.creationDate?.toString(by: .HHmm) ?? ""
             }
             .store(in: &cancellables)
     }
@@ -65,5 +75,9 @@ extension AssetDisplayViewModel {
         Task {
             try? await libraryService.toggleAssetFavorite(for: fetchResult[currentIndex])
         }
+    }
+    
+    func flush() {
+        libraryService.selectedAsset = nil
     }
 }

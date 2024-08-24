@@ -36,7 +36,8 @@ struct AllPhotosView<Router: AppRouter>: View {
                                     viewModel.removeDate(asset.creationDate)
                                 }
                                 .onTapGesture {
-                                    router.route(to: .assetDisplayView(asset: asset))
+                                    viewModel.selectAsset(asset)
+                                    router.route(to: .assetDisplayView)
                                 }
                         }
                     }

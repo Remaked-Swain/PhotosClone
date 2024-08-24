@@ -30,6 +30,9 @@ struct CommonAssembly: Assembly {
         container.register(for: AssetDisplayViewModel.self) { resolver in
             AssetDisplayViewModel(libraryService: resolver.resolve(LibraryService.self))
         }
+        container.register(for: AssetCollectionViewModel.self) { resolver in
+            AssetCollectionViewModel(libraryService: resolver.resolve(LibraryService.self))
+        }
     }
     
     func loaded(resolver: any DependencyResolver) {

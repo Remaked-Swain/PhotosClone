@@ -72,6 +72,7 @@ struct AssetDisplayView<Router: AppRouter>: View {
                 .scrollIndicators(.hidden)
                 .onAppear {
                     viewModel.startCaching(targetSize: size)
+                    proxy.scrollTo(viewModel.currentIndex, anchor: .center)
                 }
                 .onDisappear {
                     viewModel.stopCaching(targetSize: size)
@@ -88,7 +89,7 @@ struct AssetDisplayView<Router: AppRouter>: View {
                 Button {
                     viewModel.toggleFavorite()
                 } label: {
-                    Image(systemName: "heart.fill")
+                    Image(systemName: viewModel.currentAsset.isFavorite ? "heart.fill" : "heart")
                         .smallMaterialButton()
                 }
                 
@@ -104,6 +105,9 @@ struct AssetDisplayView<Router: AppRouter>: View {
         }
         .padding()
         .navigationBarBackButtonHidden()
+        .onDisappear {
+            viewModel.flush()
+        }
     }
 
     @ViewBuilder private func assetContent(_ asset: PHAsset, targetSize: CGSize) -> some View {

@@ -32,7 +32,8 @@ enum Route: Routable {
     case routerView
     case mainView
     case allPhotosView
-    case assetDisplayView(asset: PHAsset)
+    case assetDisplayView
+    case assetCollectionView
     
     // ComponentsView
     case thumbnailView(asset: PHAsset, size: CGSize, contentMode: ContentMode)
@@ -49,8 +50,10 @@ enum Route: Routable {
             MainView<Router>(router.resolver.resolve(MainViewModel.self))
         case .allPhotosView:
             AllPhotosView<Router>(router.resolver.resolve(AllPhotosViewModel.self))
-        case .assetDisplayView(let asset):
-            AssetDisplayView<Router>(router.resolver.resolve(AssetDisplayViewModel.self), asset: asset)
+        case .assetDisplayView:
+            AssetDisplayView<Router>(router.resolver.resolve(AssetDisplayViewModel.self))
+        case .assetCollectionView:
+            AssetCollectionView<Router>(router.resolver.resolve(AssetCollectionViewModel.self))
             
             // ComponentsView
         case .thumbnailView(let asset, let size, let contentMode):
