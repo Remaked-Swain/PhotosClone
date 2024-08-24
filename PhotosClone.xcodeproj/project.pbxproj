@@ -83,13 +83,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		042A1DEE2C75C181008242FA /* Data */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Data;
-			sourceTree = "<group>";
-		};
 		042A1DFF2C76D577008242FA /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -249,7 +242,6 @@
 				0430C8402C7461FE0013D314 /* App */,
 				0430C8442C7462F20013D314 /* Screens */,
 				0430C83F2C745E530013D314 /* Models */,
-				042A1DEE2C75C181008242FA /* Data */,
 				0430C8422C7462250013D314 /* Resources */,
 			);
 			path = PhotosClone;

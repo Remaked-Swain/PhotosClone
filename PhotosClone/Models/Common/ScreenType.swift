@@ -19,4 +19,18 @@ enum ScreenType {
             Label("앨범", systemImage: "square.stack.fill")
         }
     }
+    
+    var navigationTitle: String {
+        switch self {
+        case .allPhotos: ""
+        case .albums: "앨범"
+        }
+    }
+    
+    var navigationBarTitleDisplayMode: NavigationBarItem.TitleDisplayMode {
+        switch self {
+        case .allPhotos: return .automatic
+        case .albums: return .inline
+        }
+    }
 }

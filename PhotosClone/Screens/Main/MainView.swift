@@ -20,9 +20,11 @@ struct MainView<Router: AppRouter>: View {
             router.view(to: .allPhotosView)
                 .tabItemStyle(.allPhotos)
             
-            AssetCollectionView
+            router.view(to: .assetCollectionView)
                 .tabItemStyle(.albums)
         }
+        .navigationTitle(viewModel.navigationTitle)
+        .navigationBarTitleDisplayMode(viewModel.navigationBarTitleDisplayMode)
         .task {
             do {
                 try await viewModel.requestAuthorizationIfNeeded()
@@ -39,6 +41,8 @@ struct MainView<Router: AppRouter>: View {
 }
 
 #Preview {
-    MainView<DefaultAppRouter>(MainViewModel(libraryService: LibraryService()))
-        .environmentObject(DefaultAppRouter(by: CommonAssembly()))
+    NavigationStack {
+        MainView<DefaultAppRouter>(MainViewModel(libraryService: LibraryService()))
+            .environmentObject(DefaultAppRouter(by: CommonAssembly()))
+    }
 }
