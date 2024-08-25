@@ -18,6 +18,7 @@ final class AssetDisplayViewModel: ObservableObject {
     }
     @Published var assetInfoTitle: String = ""
     @Published var assetInfoSubtitle: String = ""
+    @Published var isInfoPresented: Bool = false
     
     var currentAsset: PHAsset { fetchResult[currentIndex] }
 

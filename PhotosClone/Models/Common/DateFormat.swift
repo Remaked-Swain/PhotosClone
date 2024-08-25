@@ -39,6 +39,9 @@ enum DateFormat: String {
     /// 년.월.일 오전/오후 시(24):분
     case yyyyMMddaHHmm = "yyyy.MM.dd a HH:mm"
     
+    /// 한국어 년 월 일 요일 시(24):분
+    case yyyyMMddEEEEHHmmKorean = "yyyy년 MM월 dd일 EEEE HH:mm"
+    
     /// 시:분:초
     case HHmmss = "HH:mm:ss"
     
