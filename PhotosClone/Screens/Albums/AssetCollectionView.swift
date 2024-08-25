@@ -74,7 +74,8 @@ struct AssetCollectionView<Router: AppRouter>: View {
                     .padding(.vertical, 10)
                     .contentShape(.rect)
                     .onTapGesture {
-                        router.route(to: .allPhotosView(assets: assets.toArray()))
+                        viewModel.selectAlbum(collection)
+                        router.route(to: .allPhotosView)
                     }
                 }
             }
@@ -113,15 +114,8 @@ struct AssetCollectionView<Router: AppRouter>: View {
             }
             .onTapGesture {
                 viewModel.selectAlbum(collection)
-                router.route(to: .allPhotosView(assets: assets.toArray()))
+                router.route(to: .allPhotosView)
             }
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        AssetCollectionView<DefaultAppRouter>(AssetCollectionViewModel(libraryService: LibraryService()))
-            .environmentObject(DefaultAppRouter(by: CommonAssembly()))
     }
 }

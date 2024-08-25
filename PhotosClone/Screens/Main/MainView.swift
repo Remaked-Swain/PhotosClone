@@ -17,7 +17,7 @@ struct MainView<Router: AppRouter>: View {
     
     var body: some View {
         TabView(selection: $viewModel.selectedTab) {
-            router.view(to: .allPhotosView(assets: viewModel.assets))
+            router.view(to: .allPhotosView)
                 .tabItemStyle(.allPhotos)
             
             router.view(to: .assetCollectionView)
@@ -37,12 +37,5 @@ struct MainView<Router: AppRouter>: View {
         } message: {
             Text("설정 앱으로 이동하여 사진 라이브러리로의 접근 권한을 설정해주세요.")
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        MainView<DefaultAppRouter>(MainViewModel(libraryService: LibraryService()))
-            .environmentObject(DefaultAppRouter(by: CommonAssembly()))
     }
 }
