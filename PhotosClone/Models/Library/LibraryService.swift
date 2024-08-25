@@ -12,9 +12,16 @@ final class LibraryService: NSObject {
     private let sortOption: PhotoAssetSortOption = .creationDate
     @Published var assets: PHFetchResult<PHAsset> = .init()
     @Published var selectedAsset: PHAsset? = nil
-    @Published var smartAlbums: PHFetchResult<PHAssetCollection> = .init()
-    @Published var collections: PHFetchResult<PHCollection> = .init()
+    @Published var userAlbum: PHFetchResult<PHAssetCollection> = .init()
     private var status: PHAuthorizationStatus { PHPhotoLibrary.authorizationStatus(for: .readWrite) }
+    
+    // 검색 쿼리 옵션 Shortcut
+    private lazy var fetchOptions: PHFetchOptions = {
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.sortDescriptors = [sortOption.sortDescriptor(true)]
+        fetchOptions.includeAssetSourceTypes = .typeUserLibrary
+        return fetchOptions
+    }()
     
     // 이미지 요청 옵션 Shortcut
     private lazy var requestOptions: PHImageRequestOptions = {
@@ -39,7 +46,7 @@ final class LibraryService: NSObject {
         switch status {
         case .authorized:
             PHPhotoLibrary.shared().register(self)
-            await fetchAssets()
+            fetchAssets()
         case .notDetermined, .limited:
             try await requestAuthorization()
         case .denied, .restricted:
@@ -48,17 +55,11 @@ final class LibraryService: NSObject {
         }
     }
     
-    func fetchAssets() async {
+    func fetchAssets() {
         guard status == .authorized || status == .limited else { return }
-        let fetchOptions = PHFetchOptions()
-        fetchOptions.sortDescriptors = [sortOption.sortDescriptor(true)]
-        fetchOptions.includeAssetSourceTypes = .typeUserLibrary
         
-        await MainActor.run {
-            assets = PHAsset.fetchAssets(with: fetchOptions)
-            smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .smartAlbumUserLibrary, options: nil)
-            collections = PHCollectionList.fetchTopLevelUserCollections(with: nil)
-        }
+        assets = PHAsset.fetchAssets(with: fetchOptions)
+        userAlbum = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .smartAlbumUserLibrary, options: nil)
     }
 }
 
@@ -70,7 +71,7 @@ extension LibraryService {
         switch status {
         case .authorized:
             PHPhotoLibrary.shared().register(self)
-            await fetchAssets()
+            fetchAssets()
         case .denied: 
             throw PHPhotosError(.accessUserDenied)
         case .restricted: 
@@ -161,12 +162,8 @@ extension LibraryService: PHPhotoLibraryChangeObserver {
                 assets = assetsChange.fetchResultAfterChanges
             }
             
-            if let albumsChange = changeInstance.changeDetails(for: smartAlbums) {
-                smartAlbums = albumsChange.fetchResultAfterChanges
-            }
-            
-            if let collectionsChange = changeInstance.changeDetails(for: collections) {
-                collections = collectionsChange.fetchResultAfterChanges
+            if let albumsChange = changeInstance.changeDetails(for: userAlbum) {
+                userAlbum = albumsChange.fetchResultAfterChanges
             }
         }
     }

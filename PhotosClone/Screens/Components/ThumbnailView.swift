@@ -27,13 +27,6 @@ struct ThumbnailView<Router: AppRouter>: View {
     @ObservedObject private var viewModel: ThumbnailViewModel
     @State private var image: Image?
     
-    private var imageContentMode: PHImageContentMode {
-        switch contentMode {
-        case .fit: .aspectFit
-        case .fill: .aspectFill
-        }
-    }
-    
     let asset: PHAsset
     let size: CGSize
     let contentMode: ContentMode
@@ -61,13 +54,14 @@ struct ThumbnailView<Router: AppRouter>: View {
                     .frame(width: size.width, height: size.height)
                     .clipped()
             } else {
-                Rectangle()
-                    .background(.clear)
+                Image(systemName: "photo")
+                    .resizable()
+                    .aspectRatio(1, contentMode: .fit)
                     .frame(width: size.width, height: size.height)
             }
         }
         .task {
-            let imageData = await viewModel.requestImage(for: asset, targetSize: size, contentMode: imageContentMode)
+            let imageData = await viewModel.requestImage(for: asset, targetSize: size, contentMode: contentMode.asImageContentMode)
             guard let uiImage = imageData?.image else { return }
             image = Image(uiImage: uiImage)
         }

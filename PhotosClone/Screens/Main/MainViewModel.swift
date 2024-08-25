@@ -13,7 +13,7 @@ final class MainViewModel: ObservableObject {
     @Published var isAlertPresented: Bool = false
     @Published var selectedTab: ScreenType = .allPhotos
     @Published var navigationTitle: String = ""
-    @Published var navigationBarTitleDisplayMode: NavigationBarItem.TitleDisplayMode = .automatic
+    @Published var assets: [PHAsset] = []
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -28,7 +28,14 @@ final class MainViewModel: ObservableObject {
         $selectedTab
             .sink { [weak self] screenType in
                 self?.navigationTitle = screenType.navigationTitle
-                self?.navigationBarTitleDisplayMode = screenType.navigationBarTitleDisplayMode
+            }
+            .store(in: &cancellables)
+        
+        libraryService.$assets
+            .map { $0.toArray() }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] assets in
+                self?.assets = assets
             }
             .store(in: &cancellables)
     }

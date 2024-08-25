@@ -11,3 +11,7 @@ import Photos
 extension PHAsset: Identifiable {
     public var id: String { self.localIdentifier }
 }
+
+extension PHAssetCollection: Identifiable {
+    public var id: String { self.localIdentifier }
+}

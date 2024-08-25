@@ -5,4 +5,16 @@
 //  Created by Swain Yun on 8/24/24.
 //
 
-import Foundation
+import SwiftUI
+import Photos
+
+extension ContentMode {
+    var asImageContentMode: PHImageContentMode {
+        switch self {
+        case .fit:
+                .aspectFit
+        case .fill:
+                .aspectFill
+        }
+    }
+}

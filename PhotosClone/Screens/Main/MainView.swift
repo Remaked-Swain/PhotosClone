@@ -17,14 +17,14 @@ struct MainView<Router: AppRouter>: View {
     
     var body: some View {
         TabView(selection: $viewModel.selectedTab) {
-            router.view(to: .allPhotosView)
+            router.view(to: .allPhotosView(assets: viewModel.assets))
                 .tabItemStyle(.allPhotos)
             
             router.view(to: .assetCollectionView)
                 .tabItemStyle(.albums)
         }
         .navigationTitle(viewModel.navigationTitle)
-        .navigationBarTitleDisplayMode(viewModel.navigationBarTitleDisplayMode)
+        .navigationBarTitleDisplayMode(.inline)
         .task {
             do {
                 try await viewModel.requestAuthorizationIfNeeded()

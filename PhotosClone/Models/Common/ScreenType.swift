@@ -26,11 +26,4 @@ enum ScreenType {
         case .albums: "앨범"
         }
     }
-    
-    var navigationBarTitleDisplayMode: NavigationBarItem.TitleDisplayMode {
-        switch self {
-        case .allPhotos: return .automatic
-        case .albums: return .inline
-        }
-    }
 }
